@@ -1,0 +1,18 @@
+{
+  "name": "settings-check",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "ncc build -o dist/setup src/settings-check.ts"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.7",
+    "@actions/github": "^4.0.0",
+    "ts-node": "^9.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.41",
+    "@zeit/ncc": "^0.22.3",
+    "prettier": "^2.2.1",
+    "typescript": "^4.2.4"
+  }
+}
