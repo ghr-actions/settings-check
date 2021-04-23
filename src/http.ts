@@ -8,4 +8,4 @@ export const init = (token: string) => {
 }
 
 export const getRepository = async (repo: string) =>
-  await octokit.request(`GET /repos/${repo}`)
+  octokit.request(`GET /repos/${repo}`)

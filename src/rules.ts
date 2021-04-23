@@ -27,8 +27,7 @@ export const processRules = async ({ repositories, rules, token }: Config) => {
 
   const results = []
 
-  for (let i = 0; i < repositories.length; i++) {
-    const repo = repositories[i]
+  for (const repo of repositories) {
     const { data } = await http.getRepository(repo)
     const violations = getViolations(rules, data)
     results.push({ repo, violations })

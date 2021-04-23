@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import { INPUT_REPOSITORIES, INPUT_RULES_PATH, INPUT_TOKEN } from './contstants'
-import * as path from 'path'
+import path from 'path'
 
 export interface Config {
   repositories: string[]
@@ -14,7 +14,7 @@ const getRepositoryList = (repositoriesString: string): string[] =>
 const getRules = async (
   rulesPath: string
 ): Promise<Record<string, boolean>> => {
-  return await require(path.join(process.env.GITHUB_WORKSPACE || '', rulesPath))
+  return require(path.join(process.env.GITHUB_WORKSPACE || '', rulesPath))
 }
 
 const getToken = (tokenVar: string): string => {

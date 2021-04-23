@@ -583,14 +583,13 @@ const http = __importStar(__webpack_require__(566));
 const getViolations = (rules, repository) => Object.keys(rules).reduce((violations, key) => repository[key] != rules[key]
     ? [
         ...violations,
-        { field: key, expected: rules[key], actual: repository[key] },
+        { field: key, expected: rules[key], actual: repository[key] }
     ]
     : violations, []);
 const processRules = ({ repositories, rules, token }) => __awaiter(void 0, void 0, void 0, function* () {
     http.init(token);
     const results = [];
-    for (let i = 0; i < repositories.length; i++) {
-        const repo = repositories[i];
+    for (const repo of repositories) {
         const { data } = yield http.getRepository(repo);
         const violations = getViolations(rules, data);
         results.push({ repo, violations });
@@ -1310,9 +1309,9 @@ exports.endpoint = endpoint;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.INPUT_REPOSITORIES = exports.INPUT_TOKEN = exports.INPUT_RULES_PATH = void 0;
-exports.INPUT_RULES_PATH = "rules-path";
-exports.INPUT_TOKEN = "token";
-exports.INPUT_REPOSITORIES = "repositories";
+exports.INPUT_RULES_PATH = 'rules-path';
+exports.INPUT_TOKEN = 'token';
+exports.INPUT_REPOSITORIES = 'repositories';
 
 
 /***/ }),
@@ -3394,10 +3393,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(605));
 const rules_1 = __webpack_require__(195);
 const config_1 = __webpack_require__(641);
-const rules = {
-    allow_rebase_merge: false,
-    allow_squash_merge: false,
-};
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const config = yield config_1.getConfig();
@@ -4171,54 +4166,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRepository = exports.init = void 0;
 const github = __importStar(__webpack_require__(469));
-// const rules: Record<string, any> = {
-//   allow_rebase_merge: false,
-//   allow_squash_merge: false,
-// };
-//
-//
-//
-// const returnFailing = (repository: any) => {
-//   return Object.keys(rules).reduce((broken: any, key: string) => {
-//     if (repository[key] != rules[key]) {
-//       return { ...broken, [key]: rules[key] };
-//     }
-//     return broken;
-//   }, {});
-// };
-//
-// const run = async () => {
-//   // const token = core.getInput('token')
-//   const octokit = github.getOctokit(process.env.GHT || "");
-//
-//   const owner = "GavinF17";
-//   const repo = "GavinF17.github.io";
-//
-//   let repoResponse = await octokit.request("GET /repos/{owner}/{repo}", {
-//     owner,
-//     repo,
-//   });
-//
-//   const failing = returnFailing(repoResponse.data);
-//
-//   console.log(failing);
-//
-//   repoResponse = await octokit.request("PATCH /repos/{owner}/{repo}", {
-//     owner,
-//     repo,
-//     ...failing,
-//   });
-//
-//   console.log(repoResponse);
-// };
-//
-// run();
 let octokit;
 const init = (token) => {
     octokit = github.getOctokit(token);
 };
 exports.init = init;
-const getRepository = (repo) => __awaiter(void 0, void 0, void 0, function* () { return yield octokit.request(`GET /repos/${repo}`); });
+const getRepository = (repo) => __awaiter(void 0, void 0, void 0, function* () { return octokit.request(`GET /repos/${repo}`); });
 exports.getRepository = getRepository;
 
 
@@ -4529,12 +4482,12 @@ exports.getConfig = void 0;
 const core = __importStar(__webpack_require__(605));
 const contstants_1 = __webpack_require__(404);
 const path = __importStar(__webpack_require__(622));
-const getRepositoryList = (repositoriesString) => repositoriesString.split(",").map((r) => r.trim());
+const getRepositoryList = (repositoriesString) => repositoriesString.split(',').map((r) => r.trim());
 const getRules = (rulesPath) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield require(path.join(process.env.GITHUB_WORKSPACE || "", rulesPath));
+    return require(path.join(process.env.GITHUB_WORKSPACE || '', rulesPath));
 });
 const getToken = (tokenVar) => {
-    return process.env[tokenVar] || "";
+    return process.env[tokenVar] || '';
 };
 const getConfig = () => __awaiter(void 0, void 0, void 0, function* () {
     const repositoriesString = core.getInput(contstants_1.INPUT_REPOSITORIES);
@@ -4546,7 +4499,7 @@ const getConfig = () => __awaiter(void 0, void 0, void 0, function* () {
     return {
         repositories,
         rules,
-        token,
+        token
     };
 });
 exports.getConfig = getConfig;
