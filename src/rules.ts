@@ -1,4 +1,5 @@
 import * as http from "./http";
+import { Config } from "./config";
 
 interface Violation {
   field: string;
@@ -21,19 +22,17 @@ const getViolations = (
     []
   );
 
-export const processRules = async (
-  rules: Record<string, any>,
-  repositories: string[]
-) => {
-  http.init();
+export const processRules = async ({ repositories, rules, token }: Config) => {
+  http.init(token);
 
-  const results = await repositories.map(async (repo: any) => {
+  const results = [];
+
+  for (let i = 0; i < repositories.length; i++) {
+    const repo = repositories[i];
     const { data } = await http.getRepository(repo);
-
     const violations = getViolations(rules, data);
+    results.push({ repo, violations });
+  }
 
-    return { repo, violations };
-  });
-
-  console.log(results);
+  console.log(JSON.stringify(results));
 };

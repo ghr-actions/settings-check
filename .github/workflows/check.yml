@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./
         env:
-          GHT: ${{ secrets.PAT_TOKEN }}
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
           token: PAT_TOKEN
           repositories: GavinF17/GavinF17.github.io

@@ -586,14 +586,16 @@ const getViolations = (rules, repository) => Object.keys(rules).reduce((violatio
         { field: key, expected: rules[key], actual: repository[key] },
     ]
     : violations, []);
-const processRules = (rules, repositories) => __awaiter(void 0, void 0, void 0, function* () {
-    http.init();
-    const results = yield repositories.map((repo) => __awaiter(void 0, void 0, void 0, function* () {
+const processRules = ({ repositories, rules, token }) => __awaiter(void 0, void 0, void 0, function* () {
+    http.init(token);
+    const results = [];
+    for (let i = 0; i < repositories.length; i++) {
+        const repo = repositories[i];
         const { data } = yield http.getRepository(repo);
         const violations = getViolations(rules, data);
-        return { repo, violations };
-    }));
-    console.log(results);
+        results.push({ repo, violations });
+    }
+    console.log(JSON.stringify(results));
 });
 exports.processRules = processRules;
 
@@ -3390,26 +3392,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(605));
-const contstants_1 = __webpack_require__(404);
 const rules_1 = __webpack_require__(195);
+const config_1 = __webpack_require__(641);
 const rules = {
     allow_rebase_merge: false,
     allow_squash_merge: false,
 };
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(231232);
-        core.info("123123");
-        const repositories = core.getInput(contstants_1.INPUT_REPOSITORIES);
-        const rulesPath = core.getInput(contstants_1.INPUT_RULES_PATH);
-        const token = core.getInput(contstants_1.INPUT_TOKEN);
-        const repositoryList = repositories.split(",").map((r) => r.trim());
-        yield rules_1.processRules(rules, repositoryList);
+        const config = yield config_1.getConfig();
+        yield rules_1.processRules(config);
     }
     catch (error) {
         core.setFailed(error.message);
     }
 });
+run();
 
 
 /***/ }),
@@ -4216,15 +4214,11 @@ const github = __importStar(__webpack_require__(469));
 //
 // run();
 let octokit;
-const init = () => {
-    octokit = github.getOctokit(process.env.GHT || "");
+const init = (token) => {
+    octokit = github.getOctokit(token);
 };
 exports.init = init;
-const getRepository = (repo) => __awaiter(void 0, void 0, void 0, function* () {
-    return octokit.request("GET /repos/{repo}", {
-        repo,
-    });
-});
+const getRepository = (repo) => __awaiter(void 0, void 0, void 0, function* () { return yield octokit.request(`GET /repos/${repo}`); });
 exports.getRepository = getRepository;
 
 
@@ -4494,6 +4488,69 @@ module.exports = require("path");
 /***/ (function(module) {
 
 module.exports = require("net");
+
+/***/ }),
+
+/***/ 641:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getConfig = void 0;
+const core = __importStar(__webpack_require__(605));
+const contstants_1 = __webpack_require__(404);
+const path = __importStar(__webpack_require__(622));
+const getRepositoryList = (repositoriesString) => repositoriesString.split(",").map((r) => r.trim());
+const getRules = (rulesPath) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield require(path.join(process.env.GITHUB_WORKSPACE || "", rulesPath));
+});
+const getToken = (tokenVar) => {
+    return process.env[tokenVar] || "";
+};
+const getConfig = () => __awaiter(void 0, void 0, void 0, function* () {
+    const repositoriesString = core.getInput(contstants_1.INPUT_REPOSITORIES);
+    const rulesPath = core.getInput(contstants_1.INPUT_RULES_PATH);
+    const tokenVar = core.getInput(contstants_1.INPUT_TOKEN);
+    const repositories = getRepositoryList(repositoriesString);
+    const rules = yield getRules(rulesPath);
+    const token = getToken(tokenVar);
+    return {
+        repositories,
+        rules,
+        token,
+    };
+});
+exports.getConfig = getConfig;
+
 
 /***/ }),
 

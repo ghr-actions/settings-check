@@ -1,10 +1,6 @@
 import * as core from "@actions/core";
-import {
-  INPUT_REPOSITORIES,
-  INPUT_RULES_PATH,
-  INPUT_TOKEN,
-} from "./contstants";
 import { processRules } from "./rules";
+import { getConfig } from "./config";
 
 const rules: Record<string, any> = {
   allow_rebase_merge: false,
@@ -13,17 +9,12 @@ const rules: Record<string, any> = {
 
 const run = async () => {
   try {
-    console.log(231232);
-    core.info("123123");
+    const config = await getConfig();
 
-    const repositories = core.getInput(INPUT_REPOSITORIES);
-    const rulesPath = core.getInput(INPUT_RULES_PATH);
-    const token = core.getInput(INPUT_TOKEN);
-
-    const repositoryList = repositories.split(",").map((r) => r.trim());
-
-    await processRules(rules, repositoryList);
+    await processRules(config);
   } catch (error) {
     core.setFailed(error.message);
   }
 };
+
+run();

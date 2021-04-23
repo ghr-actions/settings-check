@@ -1,4 +1,4 @@
 {
-  "allow_rebase_merge": false,
+  "allow_rebase_merge": true,
   "allow_squash_merge": false
 }
