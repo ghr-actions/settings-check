@@ -60,11 +60,23 @@ const getRepositoryList = (repositoriesString: string): string[] =>
 const getRules = async (
   rulesPath: string
 ): Promise<Record<string, boolean>> => {
-  return require(path.join(process.env.GITHUB_WORKSPACE || '', rulesPath))
+  const absolutePath = path.isAbsolute(rulesPath)
+    ? rulesPath
+    : path.join(process.env.GITHUB_WORKSPACE || '', rulesPath)
+
+  return await require(absolutePath)
 }
 
 const getToken = (tokenVar: string): string => {
-  return process.env[tokenVar] || ''
+  const token = process.env[tokenVar]
+
+  if (!token) {
+    throw new Error(
+      `Could not load token from environment variable ${tokenVar}`
+    )
+  }
+
+  return token
 }
 
 export const getConfig = async (): Promise<Config> => {
@@ -73,12 +85,12 @@ export const getConfig = async (): Promise<Config> => {
   const tokenVar = core.getInput(INPUT_TOKEN)
 
   const repositories = getRepositoryList(repositoriesString)
-  // const rules = await getRules(rulesPath)
-  // const token = getToken(tokenVar)
+  const rules = await getRules(rulesPath)
+  const token = getToken(tokenVar)
 
   return {
-    repositories,
+    repositories: [],
     rules: {},
-    token: ''
+    token
   }
 }

@@ -6,7 +6,35 @@ jest.mock('@actions/core', () => ({
   getInput: jest.fn()
 }))
 
+const mockInput = (
+  repositoryString: string,
+  rulesPath: string,
+  tokenVar: string
+) => {
+  // @ts-ignore
+  core.getInput.mockImplementation((input: string) => {
+    switch (input) {
+      case INPUT_REPOSITORIES:
+        return repositoryString
+      case INPUT_RULES_PATH:
+        return rulesPath
+      case INPUT_TOKEN:
+        return tokenVar
+    }
+  })
+}
+
+const mockRules = (rulesPath: string, expectedRules = {}) => {
+  jest.mock(rulesPath, () => expectedRules, { virtual: true })
+}
+
+const mockToken = (tokenVar: string, token = 'someToken') => {
+  process.env[tokenVar] = token
+}
+
 describe('config', () => {
+  const defaultRulesPath = 'defaultRulesPath'
+  const defaultTokenVar = 'DEFAULT_TOKEN_VAR'
   const OLD_ENV = process.env
   const DEFAULT_GITHUB_ENV = {
     GITHUB_REPOSITORY: 'ghr-actions/settings-check',
@@ -37,8 +65,9 @@ describe('config', () => {
   ])(
     'returns valid repositories',
     async (repositoryString: string, expectedRepositories: string[]) => {
-      // @ts-ignore
-      core.getInput.mockReturnValue(repositoryString)
+      mockInput(repositoryString, defaultRulesPath, defaultTokenVar)
+      mockRules(defaultRulesPath)
+      mockToken(defaultTokenVar)
 
       const { repositories } = await getConfig()
 
@@ -49,28 +78,31 @@ describe('config', () => {
 
   it.each([
     'ghr-actions/settings-check/settings-enforce', // Too many parts
-    'ghr-actions/settings-check', // Invalid repository
-    'ghr-actions/settings-check' // Invalid owner
+    'ghr-ac@tions/settings-check', // Invalid repository
+    'ghr-actions/settings-c!heck' // Invalid owner
   ])('throws on invalid repositories', async (repositoryString: string) => {
-    // @ts-ignore
-    core.getInput.mockReturnValue(repositoryString)
+    mockInput(repositoryString, defaultRulesPath, defaultTokenVar)
+    mockRules(defaultRulesPath)
+    mockToken(defaultTokenVar)
 
-    const { repositories } = await getConfig()
-
-    expect(core.getInput).toBeCalledWith(INPUT_REPOSITORIES)
-    expect(repositories).toEqual(expectedRepositories)
+    await expect(getConfig()).rejects.toThrow()
   })
 
-  it('returns correct rules', async () => {
-    const rulesPath = 'somePath.json'
-    const workspace = 'workspace'
-    const path = `${workspace}/${rulesPath}`
-    process.env.GITHUB_WORKSPACE = workspace
-    const expectedRules = {}
-    // @ts-ignore
-    core.getInput.mockReturnValue(rulesPath)
+  it.each([
+    ['/tmp/repo-rules.json', true], // Absolute
+    ['repo-rules.json', false] // Relative to workdir
+  ])('returns correct rules', async (rulesPath: string, abs: boolean) => {
+    mockInput('', rulesPath, '')
 
-    jest.mock(path, () => expectedRules)
+    const expectedRules = {
+      allow_rebase_merge: true,
+      allow_squash_merge: false
+    }
+
+    mockRules(
+      abs ? rulesPath : `${DEFAULT_GITHUB_ENV.GITHUB_WORKSPACE}/${rulesPath}`,
+      expectedRules
+    )
 
     const { rules } = await getConfig()
 
@@ -78,16 +110,27 @@ describe('config', () => {
     expect(rules).toEqual(expectedRules)
   })
 
-  it('returns correct token', async () => {
-    const tokenVar = 'TOKEN_VAR'
-    const expectedToken = 'some-token'
+  it('throws on invalid rulesPath', async () => {
+    mockInput('', 'somePath', '')
+
+    await expect(getConfig()).rejects.toThrow()
+  })
+
+  it('returns the correct token', async () => {
+    const tokenVar = 'SOME_VAR'
+    const expectedToken = 'someToken'
     process.env[tokenVar] = expectedToken
-    // @ts-ignore
-    core.getInput.mockReturnValue(tokenVar)
+    mockInput('', '', tokenVar)
 
     const { token } = await getConfig()
 
     expect(core.getInput).toBeCalledWith(INPUT_TOKEN)
     expect(token).toEqual(expectedToken)
+  })
+
+  it('throws on invalid token var', async () => {
+    mockInput('', '', 'SOME_VAR')
+
+    await expect(getConfig()).rejects.toThrow()
   })
 })
