@@ -13,13 +13,14 @@ const validRepo = new RegExp(/^[\w._-]+$/)
 const validOwner = new RegExp(/^[\w-]+$/)
 
 /**
- * Takes in a delimiter separated list of repositories and returns a split and processed list of repositories.
+ * Retrieves a delimiter separated list of repositories and returns a split and
+ * processed list of repositories.
  *
- * @param {string} repositoriesString
  * @return {string[]} repositoryList
  */
-const getRepositoryList = (repositoriesString: string): string[] =>
-  repositoriesString
+const getRepositoryList = (): string[] =>
+  core
+    .getInput(INPUT_REPOSITORIES)
     .split(delimiter) // Split on delimiters
     .map((r) => r.trim()) // Trim whitespace
     .map((r) => {
@@ -34,7 +35,6 @@ const getRepositoryList = (repositoriesString: string): string[] =>
 
       if (part1 == '') {
         // Default to current repository
-        console.log(process.env.GITHUB_REPOSITORY)
         ;[owner, repo] = (process.env.GITHUB_REPOSITORY || '/').split('/')
       } else if (part2 == undefined) {
         // Default to current owner
@@ -57,17 +57,28 @@ const getRepositoryList = (repositoriesString: string): string[] =>
       return `${owner}/${repo}`
     })
 
-const getRules = async (
-  rulesPath: string
-): Promise<Record<string, boolean>> => {
+/**
+ * Retrieves path to the rules JSON file, imports, and returns it.
+ *
+ * @return {Record<string, any>} imported rules object
+ */
+const getRules = async (): Promise<Record<string, boolean>> => {
+  const rulesPath = core.getInput(INPUT_RULES_PATH)
   const absolutePath = path.isAbsolute(rulesPath)
     ? rulesPath
     : path.join(process.env.GITHUB_WORKSPACE || '', rulesPath)
 
-  return await require(absolutePath)
+  return require(absolutePath)
 }
 
-const getToken = (tokenVar: string): string => {
+/**
+ * Retrieves the name of an environment variable holding the GitHub token and
+ * loads it in.
+ *
+ * @return {string} GitHub token
+ */
+const getToken = (): string => {
+  const tokenVar = core.getInput(INPUT_TOKEN)
   const token = process.env[tokenVar]
 
   if (!token) {
@@ -79,18 +90,13 @@ const getToken = (tokenVar: string): string => {
   return token
 }
 
-export const getConfig = async (): Promise<Config> => {
-  const repositoriesString = core.getInput(INPUT_REPOSITORIES)
-  const rulesPath = core.getInput(INPUT_RULES_PATH)
-  const tokenVar = core.getInput(INPUT_TOKEN)
-
-  const repositories = getRepositoryList(repositoriesString)
-  const rules = await getRules(rulesPath)
-  const token = getToken(tokenVar)
-
-  return {
-    repositories: [],
-    rules: {},
-    token
-  }
-}
+/**
+ * Builds and returns an object containing any config needed for the action.
+ *
+ * @return {Promise<Config>} action config
+ */
+export const getConfig = async (): Promise<Config> => ({
+  repositories: getRepositoryList(),
+  rules: await getRules(),
+  token: getToken()
+})

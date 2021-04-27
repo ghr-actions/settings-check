@@ -33,7 +33,7 @@ const mockToken = (tokenVar: string, token = 'someToken') => {
 }
 
 describe('config', () => {
-  const defaultRulesPath = 'defaultRulesPath'
+  const defaultRulesPath = '/defaultRulesPath.json'
   const defaultTokenVar = 'DEFAULT_TOKEN_VAR'
   const OLD_ENV = process.env
   const DEFAULT_GITHUB_ENV = {
@@ -92,7 +92,8 @@ describe('config', () => {
     ['/tmp/repo-rules.json', true], // Absolute
     ['repo-rules.json', false] // Relative to workdir
   ])('returns correct rules', async (rulesPath: string, abs: boolean) => {
-    mockInput('', rulesPath, '')
+    mockInput('', rulesPath, defaultTokenVar)
+    mockToken(defaultTokenVar)
 
     const expectedRules = {
       allow_rebase_merge: true,
@@ -111,7 +112,8 @@ describe('config', () => {
   })
 
   it('throws on invalid rulesPath', async () => {
-    mockInput('', 'somePath', '')
+    mockInput('', 'somePath', defaultTokenVar)
+    mockToken(defaultTokenVar)
 
     await expect(getConfig()).rejects.toThrow()
   })
@@ -120,7 +122,8 @@ describe('config', () => {
     const tokenVar = 'SOME_VAR'
     const expectedToken = 'someToken'
     process.env[tokenVar] = expectedToken
-    mockInput('', '', tokenVar)
+    mockInput('', defaultRulesPath, tokenVar)
+    mockRules(defaultRulesPath)
 
     const { token } = await getConfig()
 
@@ -129,7 +132,8 @@ describe('config', () => {
   })
 
   it('throws on invalid token var', async () => {
-    mockInput('', '', 'SOME_VAR')
+    mockInput('', defaultRulesPath, 'SOME_VAR')
+    mockRules(defaultRulesPath)
 
     await expect(getConfig()).rejects.toThrow()
   })
