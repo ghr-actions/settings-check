@@ -15,7 +15,7 @@
   "scripts": {
     "build": "ncc build -o dist/setup src/settings-check.ts",
     "test": "jest",
-    "test:cov": "jest && codecov"
+    "test:cov": "jest --coverage"
   },
   "dependencies": {
     "@actions/core": "^1.2.7",
