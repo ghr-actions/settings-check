@@ -35,11 +35,11 @@ const getRepositoryList = (): string[] =>
 
       if (part1 == '') {
         // Default to current repository
-        ;[owner, repo] = (process.env.GITHUB_REPOSITORY || '/').split('/')
+        ;[owner, repo] = `${process.env.GITHUB_REPOSITORY}`.split('/')
       } else if (part2 == undefined) {
         // Default to current owner
         repo = part1
-        owner = (process.env.GITHUB_REPOSITORY || '/').split('/')[0]
+        owner = `${process.env.GITHUB_REPOSITORY}`.split('/')[0]
       } else {
         // Both defined, do not default
         owner = part1
@@ -66,7 +66,7 @@ const getRules = async (): Promise<Record<string, boolean>> => {
   const rulesPath = core.getInput(INPUT_RULES_PATH)
   const absolutePath = path.isAbsolute(rulesPath)
     ? rulesPath
-    : path.join(process.env.GITHUB_WORKSPACE || '', rulesPath)
+    : path.join(`${process.env.GITHUB_WORKSPACE}`, rulesPath)
 
   return require(absolutePath)
 }
