@@ -42,4 +42,40 @@ describe('rules', () => {
       expect(http.getRepository).toHaveBeenNthCalledWith(i + 1, repo)
     )
   })
+
+  it('returns correct violations', () => {
+    const repos: Record<string, any> = {
+      'ghr-actions/settings-check': {
+        repo: { allow_rebase_merge: true, allow_squash_merge: true },
+        violations: [
+          { field: 'allow_squash_merge', expected: false, actual: true }
+        ]
+      },
+      'ghr-actions/settings-enforce': {
+        repo: { allow_rebase_merge: false, allow_squash_merge: true },
+        violations: [
+          { field: 'allow_rebase_merge', expected: true, actual: false },
+          { field: 'allow_squash_merge', expected: false, actual: true }
+        ]
+      },
+      'GavinF17/GavinF17.github.io': {
+        repo: { allow_rebase_merge: false, allow_squash_merge: false },
+        violations: [
+          { field: 'allow_rebase_merge', expected: true, actual: false }
+        ]
+      }
+    }
+
+    // @ts-ignore
+    http.getRepository.mockImplementation((repo) => repos[repo])
+
+    const result = processRules(baseConfig)
+
+    expect(result).toEqual(
+      Object.keys(repos).map((repo) => ({
+        repo,
+        violations: repos[repo].violations
+      }))
+    )
+  })
 })
