@@ -1,5 +1,10 @@
 import * as core from '@actions/core'
-import { INPUT_REPOSITORIES, INPUT_RULES_PATH, INPUT_TOKEN } from './contstants'
+import {
+  INPUT_REPOSITORIES,
+  INPUT_REQUIRED,
+  INPUT_RULES_PATH,
+  INPUT_TOKEN
+} from './contstants'
 import path from 'path'
 
 export interface Config {
@@ -78,7 +83,7 @@ const getRules = async (): Promise<Record<string, boolean>> => {
  * @return {string} GitHub token
  */
 const getToken = (): string => {
-  const tokenVar = core.getInput(INPUT_TOKEN)
+  const tokenVar = core.getInput(INPUT_TOKEN, INPUT_REQUIRED)
   const token = process.env[tokenVar]
 
   if (!token) {

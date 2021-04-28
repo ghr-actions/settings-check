@@ -6,3 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: ./
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+        with:
+          token: REPO_TOKEN

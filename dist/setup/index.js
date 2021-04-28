@@ -1324,10 +1324,11 @@ exports.endpoint = endpoint;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.INPUT_REPOSITORIES = exports.INPUT_TOKEN = exports.INPUT_RULES_PATH = void 0;
+exports.INPUT_REQUIRED = exports.INPUT_REPOSITORIES = exports.INPUT_TOKEN = exports.INPUT_RULES_PATH = void 0;
 exports.INPUT_RULES_PATH = 'rules-path';
 exports.INPUT_TOKEN = 'token';
 exports.INPUT_REPOSITORIES = 'repositories';
+exports.INPUT_REQUIRED = { required: true };
 
 
 /***/ }),
@@ -4575,11 +4576,8 @@ const getRules = () => __awaiter(void 0, void 0, void 0, function* () {
  * @return {string} GitHub token
  */
 const getToken = () => {
-    const tokenVar = core.getInput(contstants_1.INPUT_TOKEN);
+    const tokenVar = core.getInput(contstants_1.INPUT_TOKEN, contstants_1.INPUT_REQUIRED);
     const token = process.env[tokenVar];
-    console.log(tokenVar);
-    console.log(token);
-    console.log(process.env);
     if (!token) {
         throw new Error(`Could not load token from environment variable ${tokenVar}`);
     }

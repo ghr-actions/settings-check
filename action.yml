@@ -7,8 +7,7 @@ author: GavinF17
 inputs:
   token:
     description: GitHub token to authenticate to the repoisories
-    required: false
-    default: GITHUB_TOKEN
+    required: true
   rules-path:
     description: Path to the rules file to check on the repositories
     required: false
