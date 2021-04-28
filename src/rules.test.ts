@@ -22,17 +22,17 @@ const baseConfig = {
 describe('rules', () => {
   beforeEach(() => jest.resetAllMocks())
 
-  it('initialises http with token', () => {
-    processRules(baseConfig)
+  it('initialises http with token', async () => {
+    await processRules(baseConfig)
 
     expect(http.init).toBeCalledWith(baseConfig.token)
   })
 
-  it('calls getRepository for each repo', () => {
+  it('calls getRepository for each repo', async () => {
     // @ts-ignore
     http.getRepository.mockResolvedValue({ data: {} })
 
-    processRules(baseConfig)
+    await processRules(baseConfig)
 
     expect(http.getRepository).toHaveBeenCalledTimes(
       baseConfig.repositories.length
@@ -43,7 +43,7 @@ describe('rules', () => {
     )
   })
 
-  it('returns correct violations', () => {
+  it('returns correct violations', async () => {
     const repos: Record<string, any> = {
       'ghr-actions/settings-check': {
         repo: { allow_rebase_merge: true, allow_squash_merge: true },
@@ -67,9 +67,11 @@ describe('rules', () => {
     }
 
     // @ts-ignore
-    http.getRepository.mockImplementation((repo) => repos[repo])
+    http.getRepository.mockImplementation((repo) => ({
+      data: repos[repo].repo
+    }))
 
-    const result = processRules(baseConfig)
+    const result = await processRules(baseConfig)
 
     expect(result).toEqual(
       Object.keys(repos).map((repo) => ({

@@ -25,17 +25,15 @@ const getViolations = (
 export const processRules = async ({ repositories, rules, token }: Config) => {
   http.init(token)
 
-  const results = repositories.map(async (repo) => {
-    try {
-      const { data } = await http.getRepository(repo)
-      const violations = getViolations(rules, data)
-      return { repo, violations }
-    } catch (error) {
-      return { repo, error }
-    }
-  })
-
-  console.log(JSON.stringify(results))
-
-  return results
+  return await Promise.all(
+    repositories.map(async (repo) => {
+      try {
+        const { data } = await http.getRepository(repo)
+        const violations = getViolations(rules, data)
+        return { repo, violations }
+      } catch (error) {
+        return { repo, error }
+      }
+    })
+  )
 }
