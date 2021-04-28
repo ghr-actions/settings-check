@@ -580,21 +580,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processRules = void 0;
 const http = __importStar(__webpack_require__(566));
+/**
+ * Loops over each rule and ensures the repository matches, returning a list of any rule violations.
+ *
+ * @param rules JSON object containing rules
+ * @param repository JSON response of the repositories settings
+ * @return {Violation[]} A list of each rule violation
+ */
 const getViolations = (rules, repository) => Object.keys(rules).reduce((violations, key) => repository[key] != rules[key]
     ? [
         ...violations,
         { field: key, expected: rules[key], actual: repository[key] }
     ]
     : violations, []);
+/**
+ * Requests each repository, gets the violations and returns them (or any associated errors)
+ *
+ * @param config Action configuration
+ * @return {Promise<any>} A list of repositories with any rule violations or errors
+ */
 const processRules = ({ repositories, rules, token }) => __awaiter(void 0, void 0, void 0, function* () {
     http.init(token);
-    const results = [];
-    for (const repo of repositories) {
-        const { data } = yield http.getRepository(repo);
-        const violations = getViolations(rules, data);
-        results.push({ repo, violations });
-    }
-    console.log(JSON.stringify(results));
+    return yield Promise.all(repositories.map((repo) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { data } = yield http.getRepository(repo);
+            const violations = getViolations(rules, data);
+            return { repo, violations };
+        }
+        catch (error) {
+            return { repo, error };
+        }
+    })));
 });
 exports.processRules = processRules;
 
@@ -4167,10 +4183,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRepository = exports.init = void 0;
 const github = __importStar(__webpack_require__(469));
 let octokit;
+/**
+ * Initialises Octokit with the GitHub token
+ *
+ * @param token GitHub token
+ */
 const init = (token) => {
     octokit = github.getOctokit(token);
 };
 exports.init = init;
+/**
+ * Requests a repository using an initialised Octokit
+ *
+ * @param repo The repository to request
+ * @return {Promise} The repository response promise
+ */
 const getRepository = (repo) => __awaiter(void 0, void 0, void 0, function* () { return octokit.request(`GET /repos/${repo}`); });
 exports.getRepository = getRepository;
 
@@ -4477,30 +4504,98 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getConfig = void 0;
 const core = __importStar(__webpack_require__(605));
 const contstants_1 = __webpack_require__(404);
-const path = __importStar(__webpack_require__(622));
-const getRepositoryList = (repositoriesString) => repositoriesString.split(',').map((r) => r.trim());
-const getRules = (rulesPath) => __awaiter(void 0, void 0, void 0, function* () {
-    return require(path.join(process.env.GITHUB_WORKSPACE || '', rulesPath));
+const path_1 = __importDefault(__webpack_require__(622));
+const delimiter = new RegExp(/[,;]/);
+const validRepo = new RegExp(/^[\w._-]+$/);
+const validOwner = new RegExp(/^[\w-]+$/);
+/**
+ * Retrieves a delimiter separated list of repositories and returns a split and
+ * processed list of repositories.
+ *
+ * @return {string[]} repositoryList
+ */
+const getRepositoryList = () => core
+    .getInput(contstants_1.INPUT_REPOSITORIES)
+    .split(delimiter) // Split on delimiters
+    .map((r) => r.trim()) // Trim whitespace
+    .map((r) => {
+    // Split into parts
+    const [part1, part2, ...rest] = r.split('/');
+    let owner, repo;
+    // If there are more than 1 '/' characters, the string is invalid
+    if (rest.length != 0) {
+        throw new Error(`Repository ${r} is not valid`);
+    }
+    if (part1 == '') {
+        // Default to current repository
+        ;
+        [owner, repo] = `${process.env.GITHUB_REPOSITORY}`.split('/');
+    }
+    else if (part2 == undefined) {
+        // Default to current owner
+        repo = part1;
+        owner = `${process.env.GITHUB_REPOSITORY}`.split('/')[0];
+    }
+    else {
+        // Both defined, do not default
+        owner = part1;
+        repo = part2;
+    }
+    if (!validRepo.test(repo)) {
+        throw new Error(`Repository name ${repo} is not valid`);
+    }
+    if (!validOwner.test(owner)) {
+        throw new Error(`Owner name ${owner} is not valid`);
+    }
+    return `${owner}/${repo}`;
 });
-const getToken = (tokenVar) => {
-    return process.env[tokenVar] || '';
-};
-const getConfig = () => __awaiter(void 0, void 0, void 0, function* () {
-    const repositoriesString = core.getInput(contstants_1.INPUT_REPOSITORIES);
+/**
+ * Retrieves path to the rules JSON file, imports, and returns it.
+ *
+ * @return {Record<string, boolean>} imported rules object
+ */
+const getRules = () => __awaiter(void 0, void 0, void 0, function* () {
     const rulesPath = core.getInput(contstants_1.INPUT_RULES_PATH);
+    const absolutePath = path_1.default.isAbsolute(rulesPath)
+        ? rulesPath
+        : path_1.default.join(`${process.env.GITHUB_WORKSPACE}`, rulesPath);
+    return require(absolutePath);
+});
+/**
+ * Retrieves the name of an environment variable holding the GitHub token and
+ * loads it in.
+ *
+ * @return {string} GitHub token
+ */
+const getToken = () => {
     const tokenVar = core.getInput(contstants_1.INPUT_TOKEN);
-    const repositories = getRepositoryList(repositoriesString);
-    const rules = yield getRules(rulesPath);
-    const token = getToken(tokenVar);
-    return {
-        repositories,
-        rules,
-        token
-    };
+    const token = process.env[tokenVar];
+    console.log(tokenVar);
+    console.log(token);
+    console.log(process.env);
+    if (!token) {
+        throw new Error(`Could not load token from environment variable ${tokenVar}`);
+    }
+    return token;
+};
+/**
+ * Builds and returns an object containing any config needed for the action.
+ *
+ * @return {Promise<Config>} action config
+ */
+const getConfig = () => __awaiter(void 0, void 0, void 0, function* () {
+    return ({
+        repositories: getRepositoryList(),
+        rules: yield getRules(),
+        token: getToken()
+    });
 });
 exports.getConfig = getConfig;
 
