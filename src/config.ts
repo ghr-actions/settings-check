@@ -60,7 +60,7 @@ const getRepositoryList = (): string[] =>
 /**
  * Retrieves path to the rules JSON file, imports, and returns it.
  *
- * @return {Record<string, any>} imported rules object
+ * @return {Record<string, boolean>} imported rules object
  */
 const getRules = async (): Promise<Record<string, boolean>> => {
   const rulesPath = core.getInput(INPUT_RULES_PATH)
