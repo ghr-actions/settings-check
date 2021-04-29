@@ -601,7 +601,7 @@ const getViolations = (rules, repository) => Object.keys(rules).reduce((violatio
  */
 const processRules = ({ repositories, rules, token }) => __awaiter(void 0, void 0, void 0, function* () {
     http.init(token);
-    return yield Promise.all(repositories.map((repo) => __awaiter(void 0, void 0, void 0, function* () {
+    return Promise.all(repositories.map((repo) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const { data } = yield http.getRepository(repo);
             const violations = getViolations(rules, data);

@@ -127,7 +127,7 @@ describe('config', () => {
 
     const { token } = await getConfig()
 
-    expect(core.getInput).toBeCalledWith(INPUT_TOKEN)
+    expect(core.getInput).toBeCalledWith(INPUT_TOKEN, { required: true })
     expect(token).toEqual(expectedToken)
   })
 
