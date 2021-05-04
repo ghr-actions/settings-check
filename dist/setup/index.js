@@ -579,6 +579,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processRules = void 0;
+const core = __importStar(__webpack_require__(605));
 const http = __importStar(__webpack_require__(566));
 /**
  * Loops over each rule and ensures the repository matches, returning a list of any rule violations.
@@ -593,6 +594,28 @@ const getViolations = (rules, repository) => Object.keys(rules).reduce((violatio
         { field: key, expected: rules[key], actual: repository[key] }
     ]
     : violations, []);
+const reportViolations = (repoViolations) => {
+    // @ts-ignore
+    const passes = repoViolations.reduce((a, { repo, violations, error }) => {
+        let thisPasses = true;
+        if ((!violations || violations.length) && !error) {
+            core.info(`${repo} passed all checks`);
+            return;
+        }
+        if (violations === null || violations === void 0 ? void 0 : violations.length) {
+            core.error(violations.reduce((a, { field, expected, actual }) => `${a}\n\t- ${field} was expected to be "${expected}", but was actually "${actual}"`, `${repo} failed some checks:`));
+            thisPasses = false;
+        }
+        if (error) {
+            core.error(`An error occurred while processing ${repo}:\\n\\n${error}`);
+            thisPasses = false;
+        }
+        return thisPasses && a;
+    }, true);
+    if (!passes) {
+        core.setFailed('Some checks failed');
+    }
+};
 /**
  * Requests each repository, gets the violations and returns them (or any associated errors)
  *
@@ -601,16 +624,18 @@ const getViolations = (rules, repository) => Object.keys(rules).reduce((violatio
  */
 const processRules = ({ repositories, rules, token }) => __awaiter(void 0, void 0, void 0, function* () {
     http.init(token);
-    return Promise.all(repositories.map((repo) => __awaiter(void 0, void 0, void 0, function* () {
+    const repoViolations = yield Promise.all(repositories.map((repo) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const { data } = yield http.getRepository(repo);
-            const violations = getViolations(rules, data);
+            const violations = getViolations(rules.repository, data);
             return { repo, violations };
         }
         catch (error) {
             return { repo, error };
         }
     })));
+    reportViolations(repoViolations);
+    return repoViolations;
 });
 exports.processRules = processRules;
 

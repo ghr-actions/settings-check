@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import * as http from './http'
 import { Config } from './config'
 
@@ -14,7 +15,7 @@ interface Violation {
  * @param repository JSON response of the repositories settings
  * @return {Violation[]} A list of each rule violation
  */
-const getRepositoryViolations = (
+const getViolations = (
   rules: Record<string, any>,
   repository: any
 ): Violation[] =>
@@ -29,6 +30,48 @@ const getRepositoryViolations = (
     []
   )
 
+const reportViolations = (
+  repoViolations: {
+    repo: string
+    violations?: Violation[]
+    error?: any
+  }[]
+) => {
+  // @ts-ignore
+  const passes = repoViolations.reduce((a, { repo, violations, error }) => {
+    let thisPasses = true
+
+    if ((!violations || violations.length) && !error) {
+      core.info(`${repo} passed all checks`)
+      return
+    }
+
+    if (violations?.length) {
+      core.error(
+        violations.reduce(
+          (a, { field, expected, actual }) =>
+            `${a}\n\t- ${field} was expected to be "${expected}", but was actually "${actual}"`,
+          `${repo} failed some checks:`
+        )
+      )
+
+      thisPasses = false
+    }
+
+    if (error) {
+      core.error(`An error occurred while processing ${repo}:\n\n${error}`)
+
+      thisPasses = false
+    }
+
+    return thisPasses && a
+  }, true)
+
+  if (!passes) {
+    core.setFailed('Some checks failed')
+  }
+}
+
 /**
  * Requests each repository, gets the violations and returns them (or any associated errors)
  *
@@ -38,15 +81,19 @@ const getRepositoryViolations = (
 export const processRules = async ({ repositories, rules, token }: Config) => {
   http.init(token)
 
-  return Promise.all(
+  const repoViolations = await Promise.all(
     repositories.map(async (repo) => {
       try {
         const { data } = await http.getRepository(repo)
-        const violations = getRepositoryViolations(rules.repository, data)
+        const violations = getViolations(rules.repository, data)
         return { repo, violations }
       } catch (error) {
         return { repo, error }
       }
     })
   )
+
+  reportViolations(repoViolations)
+
+  return repoViolations
 }

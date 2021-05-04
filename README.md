@@ -40,7 +40,7 @@ could be true or false in the response.
 #### Options
 
 | Input         | Required           | Default             | Description                                         |
-| ------------- | ------------------ | ------------------- | --------------------------------------------------- |
+| ------------- |:------------------:| ------------------- | --------------------------------------------------- |
 |`token`        | :heavy_check_mark: | _N/A_               | GitHub token to authenticate to the repositories    |
 |`rules-path`   |                    | `rules.json`        | Path to the rules file to check on the repositories |
 |`repositories` |                    | `GITHUB_REPOSITORY` | Comma separated list of repositories to check       |
