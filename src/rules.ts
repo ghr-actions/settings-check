@@ -18,7 +18,7 @@ const getViolations = (
   rules: Record<string, any>,
   repository: any
 ): Violation[] =>
-  Object.keys(rules).reduce(
+  Object.keys(rules.respository).reduce(
     (violations: Violation[], key: string) =>
       repository[key] != rules[key]
         ? [

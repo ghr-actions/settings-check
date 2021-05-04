@@ -9,7 +9,7 @@ import path from 'path'
 
 export interface Config {
   repositories: string[]
-  rules: Record<string, boolean>
+  rules: Record<string, Record<string, any>>
   token: string
 }
 
@@ -67,7 +67,7 @@ const getRepositoryList = (): string[] =>
  *
  * @return {Record<string, boolean>} imported rules object
  */
-const getRules = async (): Promise<Record<string, boolean>> => {
+const getRules = async (): Promise<Record<string, Record<string, any>>> => {
   const rulesPath = core.getInput(INPUT_RULES_PATH)
   const absolutePath = path.isAbsolute(rulesPath)
     ? rulesPath

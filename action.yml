@@ -6,13 +6,13 @@ runs:
 author: GavinF17
 inputs:
   token:
-    description: GitHub token to authenticate to the repoisories
+    description: GitHub token to authenticate to the repositories
     required: true
   rules-path:
     description: Path to the rules file to check on the repositories
     required: false
     default: rules.json
   repositories:
-    description: Comma separated list of reposoritoes to check
+    description: Comma separated list of repositories to check
     required: false
     default: GITHUB_REPOSITORY

@@ -13,8 +13,10 @@ const baseConfig = {
     'GavinF17/GavinF17.github.io'
   ],
   rules: {
-    allow_rebase_merge: true,
-    allow_squash_merge: false
+    repository: {
+      allow_rebase_merge: true,
+      allow_squash_merge: false
+    }
   },
   token: '0123456789abcdef'
 }
