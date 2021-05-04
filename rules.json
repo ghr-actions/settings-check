@@ -1,4 +1,6 @@
 {
-  "allow_rebase_merge": true,
-  "allow_squash_merge": false
+  "repository": {
+    "allow_rebase_merge": true,
+    "allow_squash_merge": false
+  }
 }

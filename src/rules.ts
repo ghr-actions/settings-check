@@ -14,11 +14,11 @@ interface Violation {
  * @param repository JSON response of the repositories settings
  * @return {Violation[]} A list of each rule violation
  */
-const getViolations = (
+const getRepositoryViolations = (
   rules: Record<string, any>,
   repository: any
 ): Violation[] =>
-  Object.keys(rules.respository).reduce(
+  Object.keys(rules).reduce(
     (violations: Violation[], key: string) =>
       repository[key] != rules[key]
         ? [
@@ -42,7 +42,7 @@ export const processRules = async ({ repositories, rules, token }: Config) => {
     repositories.map(async (repo) => {
       try {
         const { data } = await http.getRepository(repo)
-        const violations = getViolations(rules, data)
+        const violations = getRepositoryViolations(rules.repository, data)
         return { repo, violations }
       } catch (error) {
         return { repo, error }

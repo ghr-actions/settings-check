@@ -37,6 +37,14 @@ could be true or false in the response.
 
 ### 2. Add your workflow
 
+#### Options
+
+| Input         | Required           | Default             | Description                                         |
+| ------------- | ------------------ | ------------------- | --------------------------------------------------- |
+|`token`        | :heavy_check_mark: | _N/A_               | GitHub token to authenticate to the repositories    |
+|`rules-path`   |                    | `rules.json`        | Path to the rules file to check on the repositories |
+|`repositories` |                    | `GITHUB_REPOSITORY` | Comma separated list of repositories to check       |
+
 **Example workflow:**
 
 ```yaml
@@ -60,40 +68,3 @@ The above example will run the workflow every day at 08:00. Scheduled jobs are m
 there is no way to trigger a job on a settings change, so a scheduled job is required. See the [trigger documentation
 ](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events) for more details on how
 to configure the timing.
-
-#### Options
-
-<table>
-<thead>
-<tr>
-   <td>Input</td>
-   <td>Required</td>
-   <td>Default</td>
-   <td>Description</td>
-</tr>
-</thead>
-<tbody>
-
-<tr>
-   <td>`token`</td>
-   <td>:heavy_check_mark:</td>
-   <td>_N/A_</td>
-   <td>GitHub token to authenticate to the repositories</td>
-</tr>
-
-<tr>
-   <td>`rules-path`</td>
-   <td></td>
-   <td>`rules.json`</td>
-   <td>Path to the rules file to check on the repositories</td>
-</tr>
-
-<tr>
-   <td>`repositories`</td>
-   <td></td>
-   <td>`GITHUB_REPOSITORY`</td>
-   <td>Comma separated list of repositories to check</td>
-</tr>
-
-</tbody>
-</table>
