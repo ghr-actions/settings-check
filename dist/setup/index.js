@@ -598,15 +598,15 @@ const reportViolations = (repoViolations) => {
     // @ts-ignore
     const passes = repoViolations.reduce((a, { repo, violations, error }) => {
         if ((!violations || !violations.length) && !error) {
-            core.info(`${repo} passed all checks`);
+            core.info(`\u001b[32m${repo} passed all checks`);
             return a;
         }
         if (violations === null || violations === void 0 ? void 0 : violations.length) {
-            core.error(`${repo} failed some checks:`);
-            violations.forEach(({ field, expected, actual }) => core.error(`  - "${field}" was expected to be "${expected}", but was actually "${actual}"`));
+            core.error(`\u001b[31m${repo} failed some checks:`);
+            violations.forEach(({ field, expected, actual }) => core.error(`\u001b[31m  - "${field}" was expected to be "${expected}", but was actually "${actual}"`));
         }
         if (error) {
-            core.error(`An error occurred while processing ${repo}: ${error}`);
+            core.error(`\u001b[31mAn error occurred while processing ${repo}: ${error}`);
         }
         return false;
     }, true);

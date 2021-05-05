@@ -6,6 +6,8 @@ jest.mock('./http', () => ({
   getRepository: jest.fn()
 }))
 
+jest.mock('@actions/core')
+
 const baseConfig = {
   repositories: [
     'ghr-actions/settings-check',
