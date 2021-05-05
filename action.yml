@@ -15,4 +15,3 @@ inputs:
   repositories:
     description: Comma separated list of repositories to check
     required: false
-    default: GITHUB_REPOSITORY

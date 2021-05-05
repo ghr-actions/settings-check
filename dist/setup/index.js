@@ -597,20 +597,18 @@ const getViolations = (rules, repository) => Object.keys(rules).reduce((violatio
 const reportViolations = (repoViolations) => {
     // @ts-ignore
     const passes = repoViolations.reduce((a, { repo, violations, error }) => {
-        let thisPasses = true;
-        if ((!violations || violations.length) && !error) {
+        if ((!violations || !violations.length) && !error) {
             core.info(`${repo} passed all checks`);
-            return;
+            return a;
         }
         if (violations === null || violations === void 0 ? void 0 : violations.length) {
-            core.error(violations.reduce((a, { field, expected, actual }) => `${a}\n\t- ${field} was expected to be "${expected}", but was actually "${actual}"`, `${repo} failed some checks:`));
-            thisPasses = false;
+            core.error(`${repo} failed some checks:`);
+            violations.forEach(({ field, expected, actual }) => core.error(`  - "${field}" was expected to be "${expected}", but was actually "${actual}"`));
         }
         if (error) {
-            core.error(`An error occurred while processing ${repo}:\\n\\n${error}`);
-            thisPasses = false;
+            core.error(`An error occurred while processing ${repo}: ${error}`);
         }
-        return thisPasses && a;
+        return false;
     }, true);
     if (!passes) {
         core.setFailed('Some checks failed');
