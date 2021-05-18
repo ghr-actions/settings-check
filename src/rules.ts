@@ -88,6 +88,4 @@ export const processRules = async ({ repositories, rules, token }: Config) => {
   )
 
   reportViolations(repoViolations)
-
-  return repoViolations
 }

@@ -1,9 +1,16 @@
 import { processRules } from './rules'
 import * as http from './http'
+import * as core from '@actions/core'
 
 jest.mock('./http', () => ({
   init: jest.fn(),
   getRepository: jest.fn()
+}))
+
+jest.mock('@actions/core', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  setFailed: jest.fn()
 }))
 
 jest.mock('@actions/core')
@@ -47,7 +54,25 @@ describe('rules', () => {
     )
   })
 
-  it('returns correct violations', async () => {
+  it('reports all checks passed', async () => {
+    // @ts-ignore
+    http.getRepository.mockResolvedValue({
+      data: { allow_rebase_merge: true, allow_squash_merge: false }
+    })
+
+    await processRules(baseConfig)
+
+    baseConfig.repositories.forEach((repo) =>
+      expect(core.info).toHaveBeenCalledWith(
+        `\u001b[32m${repo} passed all checks`
+      )
+    )
+
+    expect(core.error).not.toHaveBeenCalled()
+    expect(core.setFailed).not.toHaveBeenCalled()
+  })
+
+  it('reports correct violations', async () => {
     const repos: Record<string, any> = {
       'ghr-actions/settings-check': {
         repo: { allow_rebase_merge: true, allow_squash_merge: true },
@@ -75,13 +100,21 @@ describe('rules', () => {
       data: repos[repo].repo
     }))
 
-    const result = await processRules(baseConfig)
+    await processRules(baseConfig)
 
-    expect(result).toEqual(
-      Object.keys(repos).map((repo) => ({
-        repo,
-        violations: repos[repo].violations
-      }))
-    )
+    Object.keys(repos).forEach((key) => {
+      const { violations } = repos[key]
+      expect(core.error).toHaveBeenCalledWith(
+        `\u001b[31m${key} failed some checks:`
+      )
+      violations.forEach(({ field, expected, actual }: any) =>
+        expect(core.error).toHaveBeenCalledWith(
+          `\u001b[31m  - "${field}" was expected to be "${expected}", but was actually "${actual}"`
+        )
+      )
+    })
+
+    expect(core.info).not.toHaveBeenCalled()
+    expect(core.setFailed).toHaveBeenCalledWith('Some checks failed')
   })
 })
