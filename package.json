@@ -1,0 +1,35 @@
+{
+  "name": "settings-check",
+  "description": "Checks that a GitHub repos settings line up with a specification",
+  "version": "1.0.0",
+  "main": "dist/setup/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ghr-actions/settings-check.git"
+  },
+  "author": {
+    "name": "Gavin Fenton",
+    "url": "https://gavinfenton.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "ncc build -o dist/setup src/settings-check.ts",
+    "test": "jest",
+    "test:cov": "jest --coverage",
+    "test:codecov": "jest --coverage && codecov"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.7",
+    "@actions/github": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.22",
+    "@types/node": "^14.14.41",
+    "@zeit/ncc": "^0.22.3",
+    "codecov": "^3.8.1",
+    "jest": "^26.6.3",
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.5.5",
+    "typescript": "^4.2.4"
+  }
+}

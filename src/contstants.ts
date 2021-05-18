@@ -1,0 +1,5 @@
+export const INPUT_RULES_PATH = 'rules-path'
+export const INPUT_TOKEN = 'token'
+export const INPUT_REPOSITORIES = 'repositories'
+
+export const INPUT_REQUIRED = { required: true }

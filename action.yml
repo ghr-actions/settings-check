@@ -1,0 +1,17 @@
+name: Settings Check
+description: Checks that a GitHub repos settings line up with a specification
+runs:
+  using: node12
+  main: dist/setup/index.js
+author: GavinF17
+inputs:
+  token:
+    description: GitHub token to authenticate to the repositories
+    required: true
+  rules-path:
+    description: Path to the rules file to check on the repositories
+    required: false
+    default: rules.json
+  repositories:
+    description: Comma separated list of repositories to check
+    required: false

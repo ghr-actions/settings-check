@@ -1,0 +1,13 @@
+name: check
+on: push
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ghr-actions/settings-check@beta
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+        with:
+          token: REPO_TOKEN
