@@ -595,7 +595,6 @@ const getViolations = (rules, repository) => Object.keys(rules).reduce((violatio
     ]
     : violations, []);
 const reportViolations = (repoViolations) => {
-    // @ts-ignore
     const passes = repoViolations.reduce((a, { repo, violations, error }) => {
         if ((!violations || !violations.length) && !error) {
             core.info(`\u001b[32m${repo} passed all checks`);
@@ -633,7 +632,6 @@ const processRules = ({ repositories, rules, token }) => __awaiter(void 0, void 
         }
     })));
     reportViolations(repoViolations);
-    return repoViolations;
 });
 exports.processRules = processRules;
 

@@ -2,7 +2,7 @@ name: Settings Check
 description: Checks that a GitHub repos settings line up with a specification
 runs:
   using: node12
-  main: ./dist/setup/index.js
+  main: dist/setup/index.js
 author: GavinF17
 inputs:
   token:
