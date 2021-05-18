@@ -37,7 +37,6 @@ const reportViolations = (
     error?: any
   }[]
 ) => {
-  // @ts-ignore
   const passes = repoViolations.reduce((a, { repo, violations, error }) => {
     if ((!violations || !violations.length) && !error) {
       core.info(`\u001b[32m${repo} passed all checks`)
