@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: ghr-actions/settings-check@beta
+      - uses: ghr-actions/settings-check@v0.1.0
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
         with:
